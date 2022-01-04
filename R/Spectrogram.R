@@ -1,173 +1,83 @@
-
-#' Title
+#' Core spectrogram function for `soundcheck`
 #'
-#' @param Audio desc
-#' @param SamplingFrequency desc
-#' @param WindowLength desc
-#' @param FrequencyResolution desc
-#' @param TimeStepSize desc
-#' @param nTimeSteps desc
-#' @param Preemphasis desc
-#' @param DynamicRange desc
-#' @param Omit0Frequency desc
-#' @param WindowType desc
-#' @param WindowParameter desc
-#' @param plot desc
-#' @param PlotFast desc
-#' @param add desc
-#' @param col desc
-#' @param xlim desc
-#' @param ylim desc
-#' @param main desc
-#' @param xlab desc
-#' @param ylab desc
+#'  This function is a slight adaptation to the function developed
+#'  by Aaron Albin (\url{https://github.com/usagi5886/dsp/blob/master/Spectrogram().r}; GNU General Public License, 2015). The documentation details below are his.
 #'
-#' @return
+#' @param Audio An object of class 'Wave', created with the `readWave()` function from the package `tuneR`.
+#' You can also set 'Audio' to be a numeric vector (representing a sequence of samples taken from a sound wave)
+#' if and only if the SamplingFrequency argument is specified (i.e. not NULL).
+#' @param SamplingFrequency The sampling frequency/rate of the sound in Hertz.
+#' (Note that setting 'Audio' to be a 2-row or 2-column matrix (representing the two channels in a stereo soundfile) is currently unsupported.)
+#' Only necessary to specify if `Audio` is of class `numeric`; if it is of any other class, this is ignored (hence does not need to be specified).
+#' @param WindowLength The desired length (in milliseconds) of the analysis window used to create the spectrogram
+#' The default is 5 milliseconds in spectrogram() from package 'phonTools'
+#' @param FrequencyResolution Set this to any positive integer, with higher numbers mean better resolution.
+#'Specifically, for any integer X provided, 1/X the analysis bandwidth (as determined by the number of samples in the analysis window) will be used.
+#' Note that this greatly impacts the processing time, so adjust with care!
+#' @param TimeStepSize Number of milliseconds that the window will be moved for each adjacent analysis
+#' @param nTimeSteps The overall total number of time steps
+#' If both of the above are left at NULL, nTimeSteps=400 will be used.
+#' Note that also this greatly impacts the processing time, so adjust with care!
+#' @param Preemphasis Should pre-emphasis be applied (to all frequency regions, i.e. with a dummy frequency cutoff of 0)?
+#' In other words, should the spectral slope at all frequencies increase by 6 dB per octave using a single-pole filter?
+#' This affects both the underlying spectrogram matrix as well as the plot thereof.
+#' @param DynamicRange Values less than this many dB below the maximum are 'clipped' to that value.
+#' If this is set to NULL, no such clipping occurs.
+#' This affects both the underlying spectrogram matrix as well as the plot thereof.
+#' @param Omit0Frequency The frequency band at 0 Hz is usually at very low values (e.g. -400 to -300 dB).
+#' Select TRUE to omit this frequency band from the resulting spectrogram (both the matrix and the plot thereof).
+#' @param WindowType # A character string indicating the desired type of window function to be applied to the signal
+#' All of the following types are supported: "rectangular" / "square", "blackman", "hann" / "hanning" (i.e. sine-squared), "hamming" (i.e. raised sine-squared),
+#' "cosine" / "sine", "bartlett", "gaussian", "kaiser", (Note that all names are in lowercase.)
+#' @param WindowParameter This is only relevant if the WindowType is set to "gaussian" or "kaiser"; it will be ignored in all other cases
+#' For those two kinds of window function, this specifies the relevant parameter behind the gaussian/kaiser function.
+#' If 'WindowParameter' is set to NULL for these two window types, the following defaults will be used:
+#' kaiser: 3 (not 2!); gaussian: 0.4
+#' @param plot Whether the spectrogram should be plotted or not.
+#' If FALSE, no spectrogram is plotted, and instead, a matrix is returned containing the magnitude at each bin center.
+#' The column names of this matrix correspond to time, and the row names correspond to frequency.
+#' Note that both are fully unrounded numbers stored as a character string (e.g. "115.532879818594").
+#' @param PlotFast If set to FALSE, the filled.contour() function will be used. This produces much better looking graphics (which is best for putting into publications), but takes considerably longer to plot.
+#' If set to TRUE (the default), the image() function will be used instead, with 'useRaster' set to TRUE. This makes the plotting very fast, which is optimal for when one is dynamically exploring/interacting with the signal.
+#' (This may not work properly if raster graphics are not supported on your device. See help("image") for details.)
+#' @param add This determines whether an entirely new plot is drawn (with all the annotation) or whether just the core image is drawn
+#' Careful - this should only be set to TRUE if a spectrogram has already been drawn (and therefore a graphics device / window is already open.
+#' Note: If 'add' is set to TRUE, the coordinate system of the pre-existing plot will be used; hence, any specifications of xlim and ylim will be ignored for the subsequent call to Spectrogram(..., add=TRUE).
+#' @param col # At present, you can use this argument in four ways:
+#' (1) If you leave this at NULL, the color map will be DarkBlue-Blue-Cyan-Yellow-Orange-Red-Brown
+#' (2) If you set this to "alternate", the color map will be Black-Red-Orange-Yellow-White
+#' (3) You can also set this to "greyscale"/"grayscale" to have things mapped onto a continuum from black to white.
+#' (4) Finally, you can also provide a custom vector of colors to use.
+#' @param xlim If left NULL, this will be set to the full time range of the soundfile
+#' @param ylim If left NULL, this will go from 0 to the soundfile's Nyquist frequency. Note that Praat and phonTools default to 5000 Hz. (Avoiding a fixed arbitrary number makes the user think more carefully about what they are zooming into.)
+#' @param main Main title of spectrogram.
+#' @param xlab X-axis label.
+#' @param ylab Y-axis label.
+#'
+#' @return If `plot=TRUE`, a spectrogram will be displayed in the plot pane. If `FALSE`, a matrix will be returned (see details in `plot` argument documentation above).
 #' @export
 #'
-Spectrogram = function( # Begin argument list
-
-  # [1]
-  Audio,
-  # The 'Audio' argument specifies the audio data from which the spectrogram is to be made.
-  # Three options are available for using this argument.
-
-  # Option (A):
-  # You can set 'Audio' to be a character string (i.e. a character vector of length 1) with the path to a soundfile saved somewhere on your computer
-  # Note that this requires at least one of the following packages to be installed: 'audio', 'phonTools', 'tuneR', or 'sound'.
-
-  # Option (B)
-  # You can also set 'Audio' to be one of the following four kinds of R objects (each of which contains an R-internal representation of the information inside a soundfile):
-  # - An object of class 'audioSample', created with the 'load.wave()' function from the package 'audio'
-  # - An object of class 'sound', created with the 'loadsound()' function from the package 'phonTools'
-  # - An object of class 'Wave', created with the 'readWave()' function from the package 'tuneR'
-  # - An object of class 'Sample', created with the 'loadSample()' function from the package 'sound'
-
-  # In table form, this can be represented as follows:
-  #_CLASS_______FUNCTION_____PACKAGE__
-  # audioSample load.wave()  audio
-  # sound       loadsound()  phonTools
-  # Wave        readWave()   tuneR
-  # Sample      loadSample() sound
-
-  # Option (C)
-  # You can also set 'Audio' to be a numeric vector (representing a sequence of samples taken from a sound wave) if and only if the SamplingFrequency argument is specified (i.e. not NULL).
-  # (Note that setting 'Audio' to be a 2-row or 2-column matrix (representing the two channels in a stereo soundfile) is currently unsupported.)
-
-  # [2]
-  SamplingFrequency=NULL,
-
-  # SamplingFrequency. The sampling frequency/rate of the sound in Hertz.
-  # Only necessary to specify if 'Audio' is of class 'numeric'; if it is of any other class, this is ignored (hence does not need to be specified).
-
-  # The default value for SamplingFrequency is set to 22050 in the phonTools spectrogram function, but it is safer to make the user always specify it if they want to use a numeric vector for the Audio object.
-
-  # [3]
-  WindowLength = 5,
-  # The desired length (in milliseconds) of the analysis window used to create the spectrogram
-  # The default is 5 milliseconds in spectrogram() from package 'phonTools'
-
-  # [4]
-  FrequencyResolution = 4,
-  # Set this to any positive integer, with higher numbers mean better resolution.
-  # Specifically, for any integer X provided, 1/X the analysis bandwidth (as determined by the number of samples in the analysis window) will be used.
-  # Note that this greatly impacts the processing time, so adjust with care!
-
-  # Either both of the following can be left as NULL, or one (not both!) can be specified:
-  # [5]
-  TimeStepSize = NULL, # Number of milliseconds that the window will be moved for each adjacent analysis
-  nTimeSteps = NULL, # The overall total number of time steps
-  # If both of the above are left at NULL, nTimeSteps=400 will be used.
-  # Note that also this greatly impacts the processing time, so adjust with care!
-
-  # [6]
-  Preemphasis = TRUE,
-  # Should pre-emphasis be applied (to all frequency regions, i.e. with a dummy frequency cutoff of 0)?
-  # In other words, should the spectral slope at all frequencies increase by 6 dB per octave using a single-pole filter?
-  # This affects both the underlying spectrogram matrix as well as the plot thereof.
-
-  # [7a]
-  DynamicRange = 70,
-  # The default for spectrogram() in package 'phonTools' was 50, whereas Praat's is 70.
-  # 70 seems to be preferable because you can see more things without distorting what's important.
-  # Values less than this many dB below the maximum are 'clipped' to that value.
-  # If this is set to NULL, no such clipping occurs.
-  ## This affects both the underlying spectrogram matrix as well as the plot thereof.
-
-  # [7b]
-  Omit0Frequency = FALSE,
-  # The frequency band at 0 Hz is usually at very low values (e.g. -400 to -300 dB).
-  # Select TRUE to omit this frequency band from the resulting spectrogram (both the matrix and the plot thereof).
-
-  # [8a]
-  WindowType = "kaiser",
-  # A character string indicating the desired type of window function to be applied to the signal
-  # All of the following types are supported:
-  # * "rectangular" / "square"
-  # * "blackman"
-  # * "hann" / "hanning" (i.e. sine-squared)
-  # * "hamming" (i.e. raised sine-squared)
-  # * "cosine" / "sine"
-  # * "bartlett"
-  # * "gaussian"
-  # * "kaiser"
-  # (Note that all names are in lowercase.)
-
-  # [8b]
-  WindowParameter = NULL,
-  # This is only relevant if the WindowType is set to "gaussian" or "kaiser"; it will be ignored in all other cases
-  # For those two kinds of window function, this specifies the relevant parameter behind the gaussian/kaiser function.
-  # If 'WindowParameter' is set to NULL for these two window types, the following defaults will be used:
-  # - kaiser: 3 (not 2!)
-  # - gaussian: 0.4
-
-  # [9]
-  plot = TRUE,
-  # Whether the spectrogram should be plotted or not
-  # If FALSE, no spectrogram is plotted, and instead, a matrix is returned containing the magnitude at each bin center.
-  # The column names of this matrix correspond to time, and the row names correspond to frequency.
-  # Note that both are fully unrounded numbers stored as a character string (e.g. "115.532879818594").
-
-  # ^-^-^-^-^-^-^ Plotting parameters ^-^-^-^-^-^-^
-  #(All of the following will do nothing if 'plot' is set to FALSE.)
-
-  # [10]
-  PlotFast=TRUE,
-  # If set to FALSE, the filled.contour() function will be used. This produces much better looking graphics (which is best for putting into publications), but takes considerably longer to plot.
-  # If set to TRUE (the default), the image() function will be used instead, with 'useRaster' set to TRUE. This makes the plotting very fast, which is optimal for when one is dynamically exploring/interacting with the signal.
-  # (This may not work properly if raster graphics are not supported on your device. See help("image") for details.)
-
-  # [11]
-  add = FALSE,
-  # This determines whether an entirely new plot is drawn (with all the annotation) or whether just the core image is drawn
-  # Careful - this should only be set to TRUE if a spectrogram has already been drawn (and therefore a graphics device / window is already open.
-  # Note: If 'add' is set to TRUE, the coordinate system of the pre-existing plot will be used; hence, any specifications of xlim and ylim will be ignored for the subsequent call to Spectrogram(..., add=TRUE).
-
-  # [12]
-  col = NULL,
-  # At present, you can use this argument in four ways:
-  # - If you leave this at NULL, the color map will be DarkBlue-Blue-Cyan-Yellow-Orange-Red-Brown
-  # - If you set this to "alternate", the color map will be Black-Red-Orange-Yellow-White
-  # - You can also set this to "greyscale"/"grayscale" to have things mapped onto a continuum from black to white.
-  # - Finally, you can also provide a custom vector of colors to use.
-
-  # [13a]
-  xlim = NULL,
-  # If left NULL, this will be set to the full time range of the soundfile
-
-  # [13b]
-  ylim = NULL,
-  # If left NULL, this will go from 0 to the soundfile's Nyquist frequency.
-  # Note that Praat and phonTools default to 5000 Hz.
-  # (Avoiding a fixed arbitrary number makes the user think more carefully about what they are zooming into.)
-
-  # [14]
-  # Main title, x axis label, and y axis label
-  main = "",
-  xlab = "Time (ms)",
-  ylab = "Frequency (Hz)"
-
-){ # Begin function definition
+Spectrogram <- function(Audio,
+                        SamplingFrequency=NULL,
+                        WindowLength = 5,
+                        FrequencyResolution = 4,
+                        TimeStepSize = NULL,
+                        nTimeSteps = NULL,
+                        Preemphasis = TRUE,
+                        DynamicRange = 70,
+                        Omit0Frequency = FALSE,
+                        WindowType = "kaiser",
+                        WindowParameter = NULL,
+                        plot = TRUE,
+                        PlotFast=TRUE,
+                        add = FALSE,
+                        col = NULL,
+                        xlim = NULL,
+                        ylim = NULL,
+                        main = "",
+                        xlab = "Time (ms)",
+                        ylab = "Frequency (Hz)"
+                        ){
 
   #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
   # Check to make sure Audio and SamplingFrequency are acceptable (and compatible with each other)
@@ -479,7 +389,7 @@ Spectrogram = function( # Begin argument list
 
     ColorLevels = seq(from=MinimumAmplitude, to=MaximumAmplitude, length.out=nColorLevels+1) # Add 1 so that a color is assigned to both endpoints of the range
     ColorPalette = ColorGenerator(round(nColorLevels)) # Rounded in case the user provides a decimal number, or if DynamicRange is set to a non-whole number.
-    ColorPalette = wes_palette("Zissou1",n=round(nColorLevels),type="continuous")
+    ColorPalette = wesanderson::wes_palette("Zissou1",n=round(nColorLevels),type="continuous")
 
     # If xlim is NULL, set it to the full time range of the soundfile
     if( is.null(xlim) ){ xlim = range(TimeSequence) }
@@ -538,4 +448,3 @@ Spectrogram = function( # Begin argument list
   } # End 'if/else plot==TRUE'
 
 } # End definition of function 'Spectrogram()'
-

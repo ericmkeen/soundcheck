@@ -1,36 +1,67 @@
-#' Stage settings for SoundCheck app
+#' Stage settings for the `soundcheck` app
 #'
-#' @param analysts desc
-#' @param labels desc
-#' @param na_default desc
-#' @param frequency_min desc
-#' @param frequency_max desc
-#' @param window_length desc
-#' @param frequency_resolution desc
-#' @param overlap desc
-#' @param timestep_size desc
-#' @param dynamic_range desc
-#' @param window_type desc
-#' @param window_parameter desc
+#' Use this function to generate the `settings` list that you will need to pass
+#' to `soundcheck_app()`.
 #'
-#' @return
+#' @param analysts A character vector with the names of analysts you may select from within the app.
+#' @param labels A named list; see the default for an example of formatting.
+#' Each slot of the list is a label category; its name is the title of the category (no spaces allowed),
+#' and will be a column name in your `labels_file` (see `soundcheck_app()` arguments);
+#' the slot contains a character vector of the options for that category.
+#' These categories will be the labels you will be able to choose from as you review each of your sound files.
+#' The app is designed to work well with up to five categories, if the label options are brief.
+#' @param na_default If `TRUE`, an `"N/A"` option will be added to each of the label categories, and
+#' the selection in each category will reset each time you navigate to a new sound file.
+#' If `FALSE`, the labels options will not be modified, and the selection in each category
+#' will reset to the first label in each categroy whenever you navigate to a new sound file.
+#' Using `TRUE` can be useful if you want to make sure that the analyst always manually selects a decision for each label category for each sound file,
+#' which avoids the possibility that the analyst will accidentally use the first label in a category.
+#' @param frequency_min Minimum frequency limit for the spectrogram;
+#' this is just a starting point -- you will be able to adjust this manually within `soundcheck_app()`.
+#' @param frequency_max Maximum frequency limit for the spectrogram;
+#' this is just a starting point -- you will be able to adjust this manually within `soundcheck_app()`.
+#' @param window_length The desired length (in milliseconds) of the analysis window used to create the spectrogram;
+#' smaller values typically mean higher resolution.
+#' See more details in the documentation for `Spectrogram()`.
+#' This is just a starting point -- you will be able to adjust this manually within `soundcheck_app()`.
+#' @param frequency_resolution Set this to any positive integer between 1 and 10, with higher numbers meaning better resolution.
+#' Specifically, for any integer X provided, 1/X the analysis bandwidth
+#' (as determined by the number of samples in the analysis window) will be used.
+#' Note that this greatly impacts the processing time, so adjust with care!
+#' See more details in the documentation for `Spectrogram()`.
+#' This is just a starting point -- you will be able to adjust this manually within `soundcheck_app()`.
+#' @param overlap A value between 0 and 1, used to determine the `TimestepSize` for the spectrogram.
+#' A lower value leads to higher overlap and therefore higher temporal resolution.
+#' See more details in the documentation for `Spectrogram()`.
+#' This is just a starting point -- you will be able to adjsut this manually within `soundcheck_app()`.
+#' @param dynamic_range This setting allows you to specify the sensitivity of the spectrogram image.
+#' Higher values will colorize more background noise; lower values will allow only loud noises to be colorized.
+#' Values less than this many dB below the maximum are 'clipped' to this value.
+#' See more details in the documentation for `Spectrogram()`.
+#' This is just a starting point -- you will be able to adjsut this manually within `soundcheck_app()`.
+#' @param window_type A character string indicating the desired type of window function to be applied to the signal
+#' All of the following types are supported: "rectangular" / "square", "blackman",
+#' "hann" / "hanning" (i.e. sine-squared), "hamming" (i.e. raised sine-squared),
+#' "cosine" / "sine", "bartlett", "gaussian", "kaiser", (Note that all names are in lowercase.
+#'
+#' @return A list of settings; save the return as an object, then pass to `soundcheck_app()`.
+#' If you simply wish to use the 'factory default settings' (which are good for `.wav` files with 44.1 kHz sample rate and a duration less than 1 minute),
+#' you can simply run `soundcheck_settings()`. You will be able to adjust many of the spectrogram parameters within the app,
+#' so you can iteratively modify these settings as you fine-tune them while using the app.
+#'
 #' @export
 #'
 soundcheck_settings <- function(analysts = c('Ben','Eric','Other'),
-                                labels = list(names=c('Target_species', 'Anthropogenic_noise'),
-                                              options=list(c('Not present','Present', 'Not sure'),
-                                                           c('Not present', 'Present', 'Not sure'))
-                                              ),
+                                labels = list(Target_species = c('Not present','Present', 'Not sure'),
+                                              Anthropogenic_noise = c('Not present','Present', 'Not sure')),
                                 na_default = TRUE,
-                                frequency_min = 0,
-                                frequency_max = 4000,
-                                window_length = 5,
-                                frequency_resolution = NULL,
-                                overlap = NULL,
-                                timestep_size = NULL,
-                                dynamic_range = NULL,
-                                window_type = NULL,
-                                window_parameter = NULL){
+                                frequency_min = 200,
+                                frequency_max = 900,
+                                window_length = 512,
+                                frequency_resolution = 4,
+                                overlap = .3,
+                                dynamic_range = 40,
+                                window_type = 'hamming'){
 
   settings <- as.list(environment())
 

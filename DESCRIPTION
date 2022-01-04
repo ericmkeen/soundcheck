@@ -1,12 +1,12 @@
 Package: soundcheck
-Title: What the Package Does (One Line, Title Case)
+Title: Efficiently annotate a batch of recordings using a Shiny-based, customizable spectrogram app
 Version: 0.0.0.9000
-Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
+Authors@R: c(
+    person("Eric", "Keen", , email="eric.keen@noaa.gov", role = c("aut", "cre")),
+    person("Ben", "Hendricks", , email="benhendricks@soundspace-analytics.ca ", role = c("ctb")),
+    person("Aaron", "Albin", , role = c("ctb")))
 Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
@@ -22,4 +22,5 @@ Imports:
     shinydashboard,
     shinyjs,
     stringr,
-    usethis
+    usethis,
+    wesanderson

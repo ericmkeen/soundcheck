@@ -1,7 +1,5 @@
 wav,target_species,anthropogenic_noise,third_thing,fourth_thing,analyst,datetime,comment
-wav/demo-1.wav,N/A,N/A,N/A,N/A,Eric,2022-01-03 20:05:07,
-wav/demo-2.wav,Not present,Present,Who cares,Infinite jest,Eric,2022-01-03 20:05:20,
-wav/demo-1.wav,Present,Not present,Why me,Infinite jest,N/A,2022-01-03 20:11:28,
-wav/demo-4.wav,N/A,Present,Whatever,Infinite jest,N/A,2022-01-03 20:12:01,
-wav/demo-3.wav,Not present,Present,Whatever,Seriously,N/A,2022-01-03 20:12:25,
-wav/demo-1.wav,Not present,Present,Whatever,Infinite jest,Ben,2022-01-03 20:24:39,
+wav/demo-1.wav,Not present,Not sure,Who knows,Whatever,Ben,2022-01-04 09:23:32,
+wav/demo-2.wav,Not present,Not sure,Who cares,Whatever,Ben,2022-01-04 09:25:14,
+wav/demo-3.wav,Present,Present,Why me,Whatever,Ben,2022-01-04 09:26:33,
+wav/demo-4.wav,Not present,Present,Why me,Breathe to Live,Eric,2022-01-04 09:43:03,

@@ -29,7 +29,7 @@ if(FALSE){
   use_package('shinythemes')
   use_package('rintrojs')
   use_package('DT')
-
+  use_package('wesanderson')
 }
 
 #### Try it out
