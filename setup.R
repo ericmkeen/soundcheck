@@ -35,9 +35,22 @@ if(FALSE){
 #### Try it out
 
 
+# Install soundcheck
+library(devtools)
+devtools::install_github('ericmkeen/soundcheck', force=TRUE, quiet=TRUE)
+library(soundcheck)
 
+# Before using your own data, confirm the package works on your machine by using our demo data:
+# Download the `wav` folder in this repo, unzip it, and place it in your working directory.
 
+# Now prepare settings
+settings <- soundcheck_settings()
+settings
+# If you do not wish to use defaults, modify this call using the documentation (`?soundcheck_settings`)
 
+# Launch the app
+soundcheck_app(settings)
+# For details and step-by-step instructions, see `?soundcheck_app`
 
 
 

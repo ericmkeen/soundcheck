@@ -1,11 +1,11 @@
 Package: soundcheck
-Title: Efficiently annotate a batch of recordings using a Shiny-based, customizable spectrogram app
+Title: Efficiently annotate recordings using a Shiny-based spectrogram app
 Version: 0.0.0.9000
 Authors@R: c(
     person("Eric", "Keen", , email="eric.keen@noaa.gov", role = c("aut", "cre")),
     person("Ben", "Hendricks", , email="benhendricks@soundspace-analytics.ca ", role = c("ctb")),
     person("Aaron", "Albin", , role = c("ctb")))
-Description: What the package does (one paragraph).
+Description: This package allows you to review and annotate a batch of sound files in a customizable Shiny app. 
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
