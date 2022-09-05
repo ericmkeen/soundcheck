@@ -10,11 +10,13 @@ library(devtools) ; document() ; load_all()
 # Create package environment
 
 #library(devtools)
+getwd()
 #setwd('../')
-#getwd()
-#create_package('/Users/erickeen/repos/soundcheck')
+getwd()
+#create_package('/Users/erickeen/repos/shipstrike')
 
 # Import packages
+library(usethis)
 if(FALSE){
   use_package('magrittr')
   use_package('dplyr')
@@ -31,13 +33,13 @@ if(FALSE){
   use_package('DT')
   use_package('wesanderson')
 }
-
+use_pipe()
 #### Try it out
 
 
 # Install soundcheck
 library(devtools)
-devtools::install_github('ericmkeen/soundcheck', force=TRUE, quiet=TRUE)
+devtools::install_github('ericmkeen/soundcheck')
 library(soundcheck)
 
 # Before using your own data, confirm the package works on your machine by using our demo data:
@@ -52,13 +54,86 @@ settings
 soundcheck_app(settings)
 # For details and step-by-step instructions, see `?soundcheck_app`
 
+document()
+
+# Bubble net feeding call (40 seconds) =========================================
+# good for demo 1
+
+settings <-
+  soundcheck_settings(
+    frequency_min = 200,
+    frequency_max = 900,
+    window_length = 206, #512,
+    frequency_resolution = 4,
+    overlap = 0.2, #3,
+    dynamic_range = 40,
+    window_type = "hamming"
+  )
+
+soundcheck_app(settings)
 
 
+# Human voice ======================================================
+# demos 2 (4 sec), 3 (10 sec), and 4 (20 sec)
 
+settings <-
+  soundcheck_settings(
+    frequency_min = 100,
+    frequency_max = 3500,
+    window_length = 100,
+    frequency_resolution = 4,
+    overlap = 0.2,
+    dynamic_range = 40,
+    window_type = "hamming"
+  )
 
+soundcheck_app(settings, wav_start = 2)
 
+# Fin whale =========================================================
+# demos 5 (2 mins)
 
+settings <-
+  soundcheck_settings(
+    frequency_min = 0,
+    frequency_max = 300,
+    window_length = 206,
+    frequency_resolution = 1,
+    overlap = 0.5,
+    dynamic_range = 40,
+    window_type = "hamming"
+  )
 
+soundcheck_app(settings, wav_start = 5)
 
+# Killer whales ======================================================
+# demo 6 (53 sec)
 
+settings <-
+  soundcheck_settings(
+    frequency_min = 1000,
+    frequency_max = 6000,
+    window_length = 100,
+    frequency_resolution = 2,
+    overlap = 0.9,
+    dynamic_range = 40,
+    window_type = "hamming"
+  )
+
+soundcheck_app(settings, wav_start = 6)
+
+# Reviewing large files ==============================================
+# demo 7
+
+settings <-
+  soundcheck_settings(
+    frequency_min = 100,
+    frequency_max = 6000,
+    window_length = 100,
+    frequency_resolution = 1,
+    overlap = 1,
+    dynamic_range = 40,
+    window_type = "hamming"
+  )
+
+soundcheck_app(settings, wav_start = 7)
 

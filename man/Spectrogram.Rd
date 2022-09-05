@@ -61,7 +61,6 @@ This affects both the underlying spectrogram matrix as well as the plot thereof.
 Select TRUE to omit this frequency band from the resulting spectrogram (both the matrix and the plot thereof).}
 
 \item{WindowType}{A character string indicating the desired type of window function to be applied to the signal
-
 All of the following types are supported: "rectangular" / "square", "blackman", "hann" / "hanning" (i.e. sine-squared), "hamming" (i.e. raised sine-squared),
 "cosine" / "sine", "bartlett", "gaussian", "kaiser", (Note that all names are in lowercase.)}
 
@@ -84,7 +83,6 @@ Careful - this should only be set to TRUE if a spectrogram has already been draw
 Note: If 'add' is set to TRUE, the coordinate system of the pre-existing plot will be used; hence, any specifications of xlim and ylim will be ignored for the subsequent call to Spectrogram(..., add=TRUE).}
 
 \item{col}{At present, you can use this argument in four ways:
-
 (1) If you leave this at NULL, the color map will be DarkBlue-Blue-Cyan-Yellow-Orange-Red-Brown
 (2) If you set this to "alternate", the color map will be Black-Red-Orange-Yellow-White
 (3) You can also set this to "greyscale"/"grayscale" to have things mapped onto a continuum from black to white.

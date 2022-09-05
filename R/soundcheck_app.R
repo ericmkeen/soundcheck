@@ -9,6 +9,8 @@
 #' @param wav_folder The path (relative or absolute) to your folder of `.wav` files.
 #' The default is a subfolder named `wav` within your working directory.
 #'
+#' @param wav_start The index of the `wav` file to begin with when opening the app.
+#'
 #' @param labels_file  The filepath (relative or absolute) to a `.csv` of label results.
 #' The default is `labels.csv` within your working directory.
 #' If this file does not yet exist, the function will automatically create this file
@@ -70,14 +72,19 @@
 #' Note that this app is optimized for `.wav` files with sampling rates of 44.1 kHz or lower, 1 minute or less,
 #' but you may be able to adjust the spectrogram settings to make your files work.
 #'
+#' @import shiny
+#' @import magrittr
+#' @import dplyr
 #' @export
 #'
 soundcheck_app <- function(settings,
                            wav_folder = 'wav',
+                           wav_start = 1,
                            labels_file = 'labels.csv'){
 
   if(FALSE){ # code for debugging -- not run!
     wav_folder = 'wav'
+    wav_start <- 1
     labels_file = 'labels.csv'
     verbose = TRUE
 
@@ -127,9 +134,8 @@ soundcheck_app <- function(settings,
 
   # Create vector of columns expected in the labels file
   (result_columns <- tolower(c('wav',
-                       gsub(' ',',',names(cats)),
-                       #gsub(' ','_',cats$names),
-                       'analyst','datetime','comment')))
+                               gsub(' ',',',names(cats)),
+                               'analyst','datetime','comment')))
 
   # If the labels file already exists, make sure it has the right number of columns
   if(file.exists(labels_file)){
@@ -174,9 +180,9 @@ soundcheck_app <- function(settings,
                          ##############################################################################
 
                          shiny::fluidRow(shiny::column(3,shiny::selectInput('analyst','Select analyst',
-                                                              choices=analysts, selected = analysts[1])),
+                                                                            choices=analysts, selected = analysts[1])),
                                          shiny::column(3,shiny::selectInput('filter','Filter file list?',
-                                                              choices=c('All','Not yet labeled','Already labeled'), selected='All',width='95%')),
+                                                                            choices=c('All','Not yet labeled','Already labeled'), selected='All',width='95%')),
                                          shiny::column(2,shiny::textOutput('files_counted')),
                                          shiny::column(2,shiny::textOutput('files_labeled')),
                                          shiny::column(2,shiny::textOutput('files_staged'))),
@@ -205,15 +211,15 @@ soundcheck_app <- function(settings,
                          shiny::hr(),
                          shiny::fluidRow(shiny::column(12,
                                                        shiny::h4('Labels thus far:'),
-                                                DT::dataTableOutput('df'))),
+                                                       DT::dataTableOutput('df'))),
                          shiny::br()
 
                          ##############################################################################
                          ##############################################################################
         ),
         shiny::div(style = "margin-bottom: 30px;"), # this adds breathing space between content and footer
-        shiny::tags$footer(shiny::column(6, "© Eric Keen and Ben Hendricks"),
-                    style = "
+        shiny::tags$footer(shiny::column(6, "© Eric Keen & Ben Hendricks (2022)"),
+                           style = "
    position:fixed;
    text-align:center;
    left: 0;
@@ -240,8 +246,9 @@ soundcheck_app <- function(settings,
       rv <- shiny::reactiveValues()
       rv$wav_files <- wavs # list of viable wav files
       rv$wav_file <- NULL # wav_file selected
+      rv$wav_data <- NULL
       rv$wav <- NULL # wav object
-      rv$i <- 1 # index of selected wav file
+      rv$i <- wav_start # index of selected wav file
       rv$play <- NULL
       rv$df <- read.csv(labels_file,stringsAsFactors=FALSE) # labels_file
       rv$dfi <- data.frame() # df filtered to labels for current wav file
@@ -282,8 +289,8 @@ soundcheck_app <- function(settings,
           rv$wav_files <- wavs_raw
         }else{
           shiny::showModal(shiny::modalDialog(title="No more sounds to label!",
-                                "(According to your filter settings). Showing you all the files in your WAV folder...",
-                                size="m",easyClose=TRUE))
+                                              "(According to your filter settings). Showing you all the files in your WAV folder...",
+                                              size="m",easyClose=TRUE))
           rv$wav_files <- wavs
           shiny::isolate({shiny::updateSelectInput(session,'filter',selected='All')})
         }
@@ -296,10 +303,10 @@ soundcheck_app <- function(settings,
       # Manually select file
       output$manual_select <- shiny::renderUI({
         shiny::selectInput('manual_select',
-                    'Manually select a file:',
-                    choices = rv$wav_files,
-                    selected = rv$wav_files[which(rv$wav_files %in% rv$wav_file)],
-                    width='100%')
+                           'Manually select a file:',
+                           choices = rv$wav_files,
+                           selected = rv$wav_files[which(rv$wav_files %in% rv$wav_file)],
+                           width='100%')
       })
       shiny::observeEvent(input$manual_select,{
         rv$i <- which(rv$wav_files %in% input$manual_select)
@@ -320,8 +327,8 @@ soundcheck_app <- function(settings,
           lapply(1:length(cats),
                  function(x){
                    shiny::isolate({shiny::updateSelectInput(session,
-                                              paste0('cat_',names(cats)[x]),
-                                              selected=cats[[x]][1])})
+                                                            paste0('cat_',names(cats)[x]),
+                                                            selected=cats[[x]][1])})
                  }
           )
           shiny:: isolate({shiny::updateTextInput(session, 'comment',value='')})
@@ -336,8 +343,8 @@ soundcheck_app <- function(settings,
         shiny::isolate({
           if(input$analyst == 'N/A'){
             shiny::showModal(shiny::modalDialog(title="Select an analyst name first!",
-                                  "Silly goose!",
-                                  size="m",easyClose=TRUE))
+                                                "Silly goose!",
+                                                size="m",easyClose=TRUE))
           }else{
             # Gather labels for the output line
             inputs <- shiny::reactiveValuesToList(input) # get list of all inouts
@@ -349,8 +356,8 @@ soundcheck_app <- function(settings,
 
             if(any(df_labels == 'N/A')){
               shiny::showModal(shiny::modalDialog(title="You have to make a decision for each label!",
-                                    "Are you a pelican, or a pelican't???",
-                                    size="m",easyClose=TRUE))
+                                                  "Are you a pelican, or a pelican't???",
+                                                  size="m",easyClose=TRUE))
             }else{
               df_labels <- paste(df_labels,collapse=',') # collapse this vector, sep by comma
               #print(df_labels)
@@ -384,8 +391,8 @@ soundcheck_app <- function(settings,
         isolate({
           if(rv$i == length(rv$wav_files)){
             shiny::showModal(shiny::modalDialog(title="You have reached the end of the file set!",
-                                "Bringing you back to the first file...",
-                                size="m",easyClose=TRUE))
+                                                "Bringing you back to the first file...",
+                                                size="m",easyClose=TRUE))
           }
           rv$i <- ifelse(rv$i == length(rv$wav_files), 1, rv$i+1)
         })
@@ -400,15 +407,42 @@ soundcheck_app <- function(settings,
 
       # Spectrogram ============================================================
 
+      # Prep wav_data
+      observeEvent(rv$wav_file,{
+        isolate({
+          wav_data <- NULL
+          wav_file <- rv$wav_file
+          #wav_file <- 'wav/demo-04.wav'
+          #wav_file <- 'wav/demo-05.wav'
+
+          (ok_test <- !is.null(wav_file))
+          if(ok_test){(ok_test <- file.exists(wav_file))}
+          if(ok_test){
+            lw <- tuneR::readWave(wav_file)
+            (sr <- lw@samp.rate)
+            (wav_duration <- length(lw@left) / (2*sr))
+            (bits <- lw@bit)
+            lw <- audio::as.audioSample(x = lw@left, rate = sr, bits = bits)
+            wav_data <- list(lw=lw,
+                             sr=sr,
+                             wav_duration=wav_duration,
+                             bits=bits)
+          }
+          rv$wav_data <- wav_data
+
+          #if(FALSE){
+          #  sr
+          #  play_test <- audio::play(lw, rate = sr)
+          #  play_test <- audio::pause(play_test)
+          #}
+
+        })
+      })
+
       output$spectrogram_row <- shiny::renderUI({
-        wav_file <- rv$wav_file
-        (ok_test <- !is.null(wav_file))
-        if(ok_test){(ok_test <- file.exists(wav_file))}
-        if(ok_test){
-          # Read in wav file
-          lw <- audio::load.wave(wav_file)
-          wav_duration <- length(lw) / (2*lw$rate)
-          #wav_duration <- 15
+
+        if(!is.null(rv$wav_data)){
+          wav_duration <- rv$wav_data$wav_duration
 
           if(wav_duration > 30){
             shiny::fluidRow(shiny::column(12,
@@ -464,22 +498,37 @@ soundcheck_app <- function(settings,
       })
 
       output$spectrogram <- shiny::renderPlot({
+        #print('bench 1')
         wav_file <- rv$wav_file
-        #wav_file <- 'wav/demo-3.wav'
+        #wav_file <- 'wav/demo-5.wav'
         (ok_test <- !is.null(wav_file))
         if(ok_test){(ok_test <- file.exists(wav_file))}
         if(ok_test){
+          #print('bench 2')
+
           # Read in wav file
           wav <- tuneR::readWave(filename=wav_file)
 
           # Handle settings
+          if(FALSE){
+            ylim <- c(200, 2000)
+            dynamic_range <- 40
+            overlap <- .3
+            window_length <- 350
+            frequency_resolution <- 4
+            window_type <- 'hamming'
+          }
+
           ylim <- input$frequency # ; ylim <- c(200,900)
           dynamic_range <- input$dynamic_range
           overlap <- input$overlap # time resolution
           window_length <- input$window_length #; 350
           frequency_resolution <- input$freq_resolution #;4
           window_type <-settings$window_type
+
           timestep_size <- overlap*window_length
+
+          #print('bench 3')
 
           # Display spectrogram
           par(mfrow=c(1,1), mar=c(4.2,4.2,.1,.5))
@@ -511,22 +560,19 @@ soundcheck_app <- function(settings,
       shiny::observeEvent(input$dbl,{
         shiny::isolate({
           if(is.null(rv$play)){
-             if(!is.null(rv$wav_file)){
+            if(!is.null(rv$wav_data)){
 
-              # Load wav file for playback
-              wav_file <- rv$wav_file
-              #wav_file <- 'wav/demo-4.wav'
-              lw <- audio::load.wave(wav_file)
+              x <- input$dbl$x # double click position
+              #x <- 1000
 
-              # Get sample rate
-              sr <- lw$rate * 2
-              sr
+              lw <- rv$wav_data$lw
+              sr <- rv$wav_data$sr
 
               # Determine start position based on double click
-              x <- input$dbl$x
-              (ms_start <- (x/1000)*sr) # start position in milleseconds
+              (ms_start <- (x/1000)*sr) # start position in milliseconds
               # Subset wav object according to start position
-              lw_sub <- lw[ms_start:min(c(length(lw), ms_start + (10*sr)))]
+              #lw_sub <- lw[ms_start:min(c(length(lw), ms_start + (10*sr)))]
+              lw_sub <- lw[ms_start:length(lw)]
 
               # Adjust sample rate based on playback speed
               playback_speed <- input$speed
@@ -536,7 +582,7 @@ soundcheck_app <- function(settings,
               rv$play <- audio::play(lw_sub, rate = sr_playback)
 
               #pause(playback)
-              print(input$dbl)
+              #print(input$dbl)
             }
           }else{
             rv$play <- audio::pause(rv$play)
@@ -585,8 +631,6 @@ soundcheck_app <- function(settings,
 
       # Datatable for labels currently in labels_file
       output$df <- DT::renderDataTable(rv$df %>% dplyr::arrange(desc(datetime)))
-
-
 
     }
 

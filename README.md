@@ -1,5 +1,5 @@
-# soundcheck
-Efficiently annotate a batch of sound files using a Shiny-based spectrogram app
+# `soundcheck`
+Efficiently annotate a batch of sound files using a Shiny-based spectrogram app.
 
 ### Install remotely from `GitHub`:
 ```
@@ -9,9 +9,7 @@ library(soundcheck)
 ```
 ### Try it out
 
-1. Before using your own data, confirm the package works on your machine by using our demo data:
-Download the `wav` folder in this repo, unzip it, and place it in your working directory.
-It contains four demo files, each of decreasing length (~45 seconds long to ~4 seconds; 44.1 kHz sample rate).
+1. Before using your own data, confirm the package works on your machine by using our demo data: download `wav` folder, unzip it, place it in your working directory, and make sure its name is precisely `wav`. It contains seven demo files, each of decreasing length (~45 seconds long to ~4 seconds; 44.1 kHz sample rate).
 
 2. Prepare settings for your work session:  
 
@@ -28,5 +26,105 @@ soundcheck_app(settings)
 ```
 
 4. Read detailed instructions for use in `?soundcheck_app`.  
+
+### Settings demo
+
+Each `.wav` demo file represents a different use case. Here we provide recommended settings for each use case. 
+
+#### Demo 1: Bubble net feeding calls
+
+This sound file (44.1 kHz stereo, 16 bits per sample, 40 sec) are tonal humpback whale calls occurring between 400 and 600 Hz. 
+
+```
+settings <-
+  soundcheck_settings(
+    frequency_min = 200,
+    frequency_max = 900,
+    window_length = 206, #512,
+    frequency_resolution = 4,
+    overlap = 0.2, #3,
+    dynamic_range = 40,
+    window_type = "hamming"
+  )
+
+soundcheck_app(settings)
+```
+
+#### Demos 2 - 4: Human voice
+
+These files of a male human voice are 4s, 10s, and 20s in duration. All are 44.1 kHz stereo at 16 bits per sample.
+
+```
+settings <-
+  soundcheck_settings(
+    frequency_min = 100,
+    frequency_max = 3500,
+    window_length = 100,
+    frequency_resolution = 4,
+    overlap = 0.2,
+    dynamic_range = 40,
+    window_type = "hamming"
+  )
+
+soundcheck_app(settings, wav_start = 2)
+```
+
+#### Demo 5: Fin whale song
+
+Fin whales have very-low frequency songs (18 - 60 Hz) that typically require increased playback speeds to hear. This file is 64 kHz, mono, 16 bits per sample, and 54 sec. 
+
+```
+settings <-
+  soundcheck_settings(
+    frequency_min = 0,
+    frequency_max = 300,
+    window_length = 206,
+    frequency_resolution = 1,
+    overlap = 0.5,
+    dynamic_range = 40,
+    window_type = "hamming"
+  )
+
+soundcheck_app(settings, wav_start = 5)
+```
+
+#### Demo 6: Orca calls 
+
+Killer whales produce tonal calls in the approximate range of 500 Hz to 8 kHz, as well as broadband echolocation clicks and higher-frequency whistles. This file is 64 kHz, mono, 16 bits per sample, and 53 sec.
+
+```
+settings <-
+  soundcheck_settings(
+    frequency_min = 1000,
+    frequency_max = 6000,
+    window_length = 100,
+    frequency_resolution = 2,
+    overlap = 0.9,
+    dynamic_range = 40,
+    window_type = "hamming"
+  )
+
+soundcheck_app(settings, wav_start = 6)
+```
+
+#### Demo 7: Passive acoustic monitoring 
+
+This is a 5-minute file of passive acoustic monitoring, featuring orca calls (64 kHz, mono, 16 bits per sample).  
+
+```
+settings <-
+  soundcheck_settings(
+    frequency_min = 100,
+    frequency_max = 6000,
+    window_length = 100,
+    frequency_resolution = 1,
+    overlap = 1,
+    dynamic_range = 40,
+    window_type = "hamming"
+  )
+
+soundcheck_app(settings, wav_start = 7)
+```
+
 
 
