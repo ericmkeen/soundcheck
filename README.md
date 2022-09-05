@@ -9,7 +9,7 @@ library(soundcheck)
 ```
 ### Try it out
 
-1. Before using your own data, confirm the package works on your machine by using our demo data: download `wav` folder, unzip it, place it in your working directory, and make sure its name is precisely `wav`. It contains seven demo files, each of decreasing length (~45 seconds long to ~4 seconds; 44.1 kHz sample rate).
+1. Before using your own data, confirm the package works on your machine by using our demo data: download the `wav` folder from this repo, unzip it, place it in your working directory, and make sure its name is precisely `wav`. It contains seven demo files, each of decreasing length (~45 seconds long to ~4 seconds; 44.1 kHz sample rate).
 
 2. Prepare settings for your work session:  
 
@@ -29,18 +29,18 @@ soundcheck_app(settings)
 
 ### Settings demo
 
-Each `.wav` demo file represents a different use case. Here we provide recommended settings for each use case. 
+Each `.wav` demo file represents a different use case. Here we provide recommended settings for each. 
 
 #### Demo 1: Bubble net feeding calls
 
-This sound file (44.1 kHz stereo, 16 bits per sample, 40 sec) are tonal humpback whale calls occurring between 400 and 600 Hz. 
+This sound file (44.1 kHz stereo, 16 bits per sample, 40 sec) contains tonal humpback whale calls occurring between 400 and 600 Hz. 
 
 ```
 settings <-
   soundcheck_settings(
     frequency_min = 200,
     frequency_max = 900,
-    window_length = 206, #512,
+    window_length = 206, 
     frequency_resolution = 4,
     overlap = 0.2, #3,
     dynamic_range = 40,
