@@ -75,6 +75,7 @@
 #' @import shiny
 #' @import magrittr
 #' @import dplyr
+#' @import shinythemes
 #' @export
 #'
 soundcheck_app <- function(settings,
