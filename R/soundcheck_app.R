@@ -488,7 +488,7 @@ soundcheck_app <- function(settings,
       })
       output$window_length <- renderUI({
         shiny::sliderInput('window_length',shiny::h5('FFT window length:')
-                           ,min=100,max=1000,
+                           ,min=10,max=1000,
                            value=settings$window_length,step=2)
       })
       output$freq_resolution <- renderUI({

@@ -54,7 +54,7 @@ settings
 soundcheck_app(settings)
 # For details and step-by-step instructions, see `?soundcheck_app`
 
-document()
+#document()
 
 # Bubble net feeding call (40 seconds) =========================================
 # good for demo 1

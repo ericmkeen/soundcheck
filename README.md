@@ -126,5 +126,33 @@ settings <-
 soundcheck_app(settings, wav_start = 7)
 ```
 
+### Customizing the app
 
+The `Soundcheck` app was designed to have customizable features. The `soundcheck_settings()` function can be used not only to define default spectrogram display settings, but also to customize/add/remove label categories.   
+
+The defaults for `soundcheck_settings()` will create an app with only two label categories: `"Target_species"` and `"Anthropogenic_noise"`. These labels are defined in the function's input `labels` as a named list, like so: 
+
+```
+settings <-
+  soundcheck_settings(
+    labels = list(Target_species = c('Not present','Present', 'Not sure'),
+                  Anthropogenic_noise = c('Not present','Present', 'Not sure')
+                  )
+  )
+```
+
+But you can define whatever labels you want using the `labels` input. For example, say you want to process sound files by noting whether humans, dogs, and/or cats are present in the recordings. To do so, you can prepare settings like this: 
+
+```
+settings <-
+  soundcheck_settings(
+    labels = list(Humans = c('Not present','Present', 'Not sure'),
+                  Dogs = c('Constant barking','Low-confidence woofs', 'Not sure'),
+                  Cats = c('Everywhere!', 'Lurking in the shadows', 'Not sure')
+                 )
+  )
+```
+
+Each label category you define will become the name of a column in your `labesl.csv` file. 
+The app layout typically handles up to five label categories well without getting two scrunched. 
 
