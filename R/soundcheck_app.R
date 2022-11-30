@@ -16,7 +16,13 @@
 #' If this file does not yet exist, the function will automatically create this file
 #' based upon your settings.
 #'
-#' @return A `Shiny` app will open, displaying the spectrogram of the first recording
+#' @param events_file  The filepath (relative or absolute) to a `.csv` of events details
+#' (i.e., discrete occurrences within sound files that are marked manually by the analyst).
+#' The default is `evetns.csv` within your working directory.
+#' If this file does not yet exist, the function will automatically create this file
+#' based upon your settings.
+#'
+#'#' @return A `Shiny` app will open, displaying the spectrogram of the first recording
 #' in your `wav_folder`. You can then navigate to other sound files as needed.
 #'
 #' @details The basic workflow is:
@@ -58,6 +64,9 @@
 #' \item To filter the `.wav` files within your `wav_folder` --
 #' e.g., to only the recordings you have not yet labeled, or only the recordings that you *have* already labeled --
 #' you can use the "Filter" dropdown menu (top-left in app).
+#' \item You can also **annotate** files by noting discrete events within them. You do this
+#' by single-clicking on a point of the spectrogram. The timestamp (in milleseconds)
+#' and frequency of your cursor will be stored within the `events.csv` output file.
 #' \item When your work session is over, simply close the browser window.
 #' If you modified the spectrogram settings during your work session,
 #' take note of those changes in a notebook (they will be reset when you re-launch the app) --
@@ -81,7 +90,8 @@
 soundcheck_app <- function(settings,
                            wav_folder = 'wav',
                            wav_start = 1,
-                           labels_file = 'labels.csv'){
+                           labels_file = 'labels.csv',
+                           events_file = 'events.csv'){
 
   if(FALSE){ # code for debugging -- not run!
     wav_folder = 'wav'
@@ -156,6 +166,19 @@ soundcheck_app <- function(settings,
     # Add column names
     cat(paste(result_columns,collapse=','),
         file=labels_file,
+        sep='\n',
+        append=TRUE)
+  }
+
+  # Create the events file
+  (event_columns <- tolower(c('wav', 'ms', 'hz',
+                               'analyst','datetime')))
+  if(!file.exists(events_file)){
+    file.create(events_file)
+
+    # Add column names
+    cat(paste(event_columns,collapse=','),
+        file=events_file,
         sep='\n',
         append=TRUE)
   }
@@ -406,6 +429,36 @@ soundcheck_app <- function(settings,
         })
       })
 
+      # Single click (an event)
+      shiny::observeEvent(input$single_click,{
+        shiny::isolate({
+          if(input$analyst == 'N/A'){
+            shiny::showModal(shiny::modalDialog(title="Select an analyst name first!",
+                                                "Silly goose!",
+                                                size="m",easyClose=TRUE))
+          }else{
+            sr <- rv$wav_data$sr
+            x <- input$single_click$x
+            y <- input$single_click$y
+            # Determine position in milleseconds based on single click
+            (msi <- (x/1000)*sr) # start position in milliseconds
+
+            # Prepare output to save
+            df_line <- paste(c(rv$wav_file,
+                               msi,
+                               y,
+                               input$analyst,
+                               as.character(Sys.time())),
+                             collapse=',')
+            print(df_line)
+
+            # Write output to events_file
+            cat(df_line, file=events_file, sep='\n', append=TRUE)
+          }
+        })
+      })
+
+
       # Spectrogram ============================================================
 
       # Prep wav_data
@@ -447,7 +500,9 @@ soundcheck_app <- function(settings,
 
           if(wav_duration > 30){
             shiny::fluidRow(shiny::column(12,
-                                          shiny::plotOutput("spectrogram", height="200px",
+                                          shiny::plotOutput("spectrogram",
+                                                            height="200px",
+                                                            click = 'single_click',
                                                             dblclick = "dbl")))
           }else{
             secs <- 1:30
