@@ -171,7 +171,8 @@ soundcheck_app <- function(settings,
   }
 
   # Create the events file
-  (event_columns <- tolower(c('wav', 'ms', 'hz',
+  (event_columns <- tolower(c('wav', 'ms_min', 'ms_max',
+                              'hz_min','hz_max',
                                'analyst','datetime')))
   if(!file.exists(events_file)){
     file.create(events_file)
@@ -430,7 +431,7 @@ soundcheck_app <- function(settings,
       })
 
       # Single click (an event)
-      shiny::observeEvent(input$single_click,{
+      shiny::observeEvent(input$brush,{
         shiny::isolate({
           if(input$analyst == 'N/A'){
             shiny::showModal(shiny::modalDialog(title="Select an analyst name first!",
@@ -438,15 +439,13 @@ soundcheck_app <- function(settings,
                                                 size="m",easyClose=TRUE))
           }else{
             sr <- rv$wav_data$sr
-            x <- input$single_click$x
-            y <- input$single_click$y
-            # Determine position in milleseconds based on single click
-            (msi <- (x/1000)*sr) # start position in milliseconds
 
             # Prepare output to save
             df_line <- paste(c(rv$wav_file,
-                               msi,
-                               y,
+                               round((input$brush$xmin/1000)*sr, 1),
+                               round((input$brush$xmax/1000)*sr, 1),
+                               round(input$brush$ymin, 1),
+                               round(input$brush$ymax, 1),
                                input$analyst,
                                as.character(Sys.time())),
                              collapse=',')
@@ -502,7 +501,7 @@ soundcheck_app <- function(settings,
             shiny::fluidRow(shiny::column(12,
                                           shiny::plotOutput("spectrogram",
                                                             height="200px",
-                                                            click = 'single_click',
+                                                            brush = 'brush',
                                                             dblclick = "dbl")))
           }else{
             secs <- 1:30
