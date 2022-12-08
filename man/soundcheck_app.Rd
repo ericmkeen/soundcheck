@@ -8,7 +8,8 @@ soundcheck_app(
   settings,
   wav_folder = "wav",
   wav_start = 1,
-  labels_file = "labels.csv"
+  labels_file = "labels.csv",
+  events_file = "events.csv"
 )
 }
 \arguments{
@@ -24,10 +25,15 @@ The default is a subfolder named \code{wav} within your working directory.}
 The default is \code{labels.csv} within your working directory.
 If this file does not yet exist, the function will automatically create this file
 based upon your settings.}
-}
-\value{
-A \code{Shiny} app will open, displaying the spectrogram of the first recording
-in your \code{wav_folder}. You can then navigate to other sound files as needed.
+
+\item{events_file}{The filepath (relative or absolute) to a \code{.csv} of events details
+(i.e., discrete occurrences within sound files that are marked manually by the analyst).
+The default is \code{evetns.csv} within your working directory.
+If this file does not yet exist, the function will automatically create this file
+based upon your settings.
+
+#' @return A \code{Shiny} app will open, displaying the spectrogram of the first recording
+in your \code{wav_folder}. You can then navigate to other sound files as needed.}
 }
 \description{
 This app allows you to analyze a folder of \code{.wav} files: review spectrograms,
@@ -73,6 +79,9 @@ of your \code{labels_file} using the table printed at the bottom of the app
 \item To filter the \code{.wav} files within your \code{wav_folder} --
 e.g., to only the recordings you have not yet labeled, or only the recordings that you \emph{have} already labeled --
 you can use the "Filter" dropdown menu (top-left in app).
+\item You can also \strong{annotate} files by noting discrete events within them. You do this
+by single-clicking on a point of the spectrogram. The timestamp (in milleseconds)
+and frequency of your cursor will be stored within the \code{events.csv} output file.
 \item When your work session is over, simply close the browser window.
 If you modified the spectrogram settings during your work session,
 take note of those changes in a notebook (they will be reset when you re-launch the app) --

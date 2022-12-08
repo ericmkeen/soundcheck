@@ -1,6 +1,6 @@
 Package: soundcheck
 Title: Efficiently annotate recordings using a Shiny-based spectrogram app
-Version: 0.0.1.3000
+Version: 0.0.1.4000
 Authors@R: c(
     person("Eric", "Keen", , email="eric.keen@noaa.gov", role = c("aut", "cre")),
     person("Ben", "Hendricks", , email="benhendricks@soundspace-analytics.ca ", role = c("ctb")),
@@ -19,6 +19,7 @@ Imports:
     readr,
     rintrojs,
     shiny,
+    shinybusy,
     shinydashboard,
     shinyjs,
     stringr,

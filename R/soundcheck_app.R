@@ -173,6 +173,7 @@ soundcheck_app <- function(settings,
   # Create the events file
   (event_columns <- tolower(c('wav', 'ms_min', 'ms_max',
                               'hz_min','hz_max',
+                              'n_calls', 'runs_offscreen',
                                'analyst','datetime')))
   if(!file.exists(events_file)){
     file.create(events_file)
@@ -200,6 +201,7 @@ soundcheck_app <- function(settings,
                           theme = shinythemes::shinytheme("cerulean"), #Theme of the app (blue navbar)
                           collapsible = TRUE #tab panels collapse into menu in small screens
         ),
+        shinybusy::add_busy_spinner(spin = "fading-circle"),
         shiny::mainPanel(width = 10, style="margin-left:4%; margin-right:4%",
                          ##############################################################################
                          ##############################################################################
@@ -430,7 +432,7 @@ soundcheck_app <- function(settings,
         })
       })
 
-      # Single click (an event)
+      # Brush drag (an event)
       shiny::observeEvent(input$brush,{
         shiny::isolate({
           if(input$analyst == 'N/A'){
@@ -438,24 +440,40 @@ soundcheck_app <- function(settings,
                                                 "Silly goose!",
                                                 size="m",easyClose=TRUE))
           }else{
-            sr <- rv$wav_data$sr
-
-            # Prepare output to save
-            df_line <- paste(c(rv$wav_file,
-                               round((input$brush$xmin/1000)*sr, 1),
-                               round((input$brush$xmax/1000)*sr, 1),
-                               round(input$brush$ymin, 1),
-                               round(input$brush$ymax, 1),
-                               input$analyst,
-                               as.character(Sys.time())),
-                             collapse=',')
-            print(df_line)
-
-            # Write output to events_file
-            cat(df_line, file=events_file, sep='\n', append=TRUE)
+            showModal(modalDialog(
+              textInput("n_calls", "Number of discrete calls in sequence",
+                        placeholder = 'N/A'),
+              radioButtons('runs_off','Might this sequence run off screen?', choices = c('No','Yes'), inline=TRUE),
+              footer = tagList(
+                modalButton("Cancel"),
+                actionButton("ok", "Log this call sequence")
+              )
+            ))
           }
         })
       })
+
+      observeEvent(input$ok, {
+        # Prepare output to save
+        sr <- rv$wav_data$sr
+        df_line <- paste(c(rv$wav_file,
+                           round((input$brush$xmin/1000)*sr, 1),
+                           round((input$brush$xmax/1000)*sr, 1),
+                           round(input$brush$ymin, 1),
+                           round(input$brush$ymax, 1),
+                           input$n_calls,
+                           input$runs_off,
+                           input$analyst,
+                           as.character(Sys.time())),
+                         collapse=',')
+        print(df_line)
+
+        # Write output to events_file
+        cat(df_line, file=events_file, sep='\n', append=TRUE)
+
+        removeModal()
+      })
+
 
 
       # Spectrogram ============================================================
@@ -689,7 +707,7 @@ soundcheck_app <- function(settings,
 
     }
 
-    ########################################get######################################
+    ##############################################################################
     ##############################################################################
     ##############################################################################
     # Run app

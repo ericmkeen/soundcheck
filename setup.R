@@ -32,6 +32,7 @@ if(FALSE){
   use_package('rintrojs')
   use_package('DT')
   use_package('wesanderson')
+  use_package('shinybusy')
 }
 use_pipe()
 #### Try it out
