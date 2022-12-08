@@ -519,7 +519,7 @@ soundcheck_app <- function(settings,
             shiny::fluidRow(shiny::column(12,
                                           shiny::plotOutput("spectrogram",
                                                             height="200px",
-                                                            brush = 'brush',
+                                                            brush = brushOpts('brush', delay=2000),
                                                             dblclick = "dbl")))
           }else{
             secs <- 1:30
