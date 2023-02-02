@@ -374,12 +374,22 @@ soundcheck_app <- function(settings,
                                                 size="m",easyClose=TRUE))
           }else{
             # Gather labels for the output line
-            inputs <- shiny::reactiveValuesToList(input) # get list of all inouts
-            catinputs <- grep('cat_',names(inputs)) # indices for inputs pertaining to labels
+            inputs <- shiny::reactiveValuesToList(input) # get list of all inputs
+            #catinputs <- grep('cat_',names(inputs)) # indices for inputs pertaining to labels
+
             df_labels <- c() # concatenate these labels into a character vector
-            for(i in catinputs){
-              df_labels <- c(df_labels, inputs[[i]])
+            i=1
+            print(names(inputs))
+            for(i in 1:length(cats)){
+              (cati <- names(cats)[i])
+              input_i <- which(names(inputs) == paste0('cat_',cati))
+              df_labels <- c(df_labels, inputs[[input_i]])
             }
+            print(df_labels)
+            #for(i in catinputs){
+            #  df_labels <- c(df_labels, inputs[[i]])
+            #}
+
 
             if(any(df_labels == 'N/A')){
               shiny::showModal(shiny::modalDialog(title="You have to make a decision for each label!",
