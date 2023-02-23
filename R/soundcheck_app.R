@@ -542,7 +542,9 @@ soundcheck_app <- function(settings,
 
             shiny::fluidRow(shiny::column(side_col),
                             shiny::column(fft_col,
-                                          shiny::plotOutput("spectrogram", height="200px",
+                                          shiny::plotOutput("spectrogram",
+                                                            height="200px",
+                                                            brush = brushOpts('brush', delay=2000),
                                                             dblclick = "dbl")),
                             shiny::column(side_col))
           }
